@@ -1,0 +1,66 @@
+name: Deploy
+
+# Called by ci.yml once per target. The environment input is what selects the
+# CapRover credentials: `environment:` below makes GitHub resolve secrets from
+# that environment, so staging and production share this one definition and
+# differ only in the values behind the same secret names.
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
+# A half-finished deploy is worse than a queued one, so unlike CI this never
+# cancels a run in progress; it queues behind it.
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to CapRover (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check the deploy configuration is present
+        env:
+          CAPROVER_TOKEN: ${{ secrets.CAPROVER_TOKEN }}
+          CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
+          CAPROVER_APP_NAME: ${{ secrets.CAPROVER_APP_NAME }}
+        run: |
+          missing=""
+          [ -n "$CAPROVER_TOKEN" ]    || missing="$missing CAPROVER_TOKEN"
+          [ -n "$CAPROVER_SERVER" ]   || missing="$missing CAPROVER_SERVER"
+          [ -n "$CAPROVER_APP_NAME" ] || missing="$missing CAPROVER_APP_NAME"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing deploy configuration for '${{ inputs.environment }}':$missing"
+            exit 1
+          fi
+
+      - name: Pack the build context
+        run: |
+          git archive --format=tar -o deploy.tar HEAD
+          tar -tf deploy.tar captain-definition >/dev/null \
+            || { echo "::error::captain-definition is missing from the archive."; exit 1; }
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Deploy
+        env:
+          CAPROVER_TOKEN: ${{ secrets.CAPROVER_TOKEN }}
+          CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
+          CAPROVER_APP_NAME: ${{ secrets.CAPROVER_APP_NAME }}
+        run: |
+          npx --yes caprover@2 deploy \
+            --caproverUrl "$CAPROVER_SERVER" \
+            --appToken "$CAPROVER_TOKEN" \
+            --appName "$CAPROVER_APP_NAME" \
+            --tarFile ./deploy.tar
