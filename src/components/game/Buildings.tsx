@@ -8,6 +8,7 @@ import type { Mesh } from 'three';
 import { buildingPositions, districtOf, districts, projects, type Project } from '@/data/projects';
 import { profile } from '@/data/profile';
 import { HQ_SLUG, useGameStore } from '@/stores/game.store';
+import Avatar3D from './Avatar3D';
 
 const LABEL_Z = [10, 0] as [number, number];
 
@@ -78,14 +79,20 @@ function ProjectBuilding({ project, night }: { project: Project; night: boolean 
                 />
             </mesh>
             {isNear && <Marker height={h} color={color} />}
-            <Html position={[0, h + 1.6, 0]} center zIndexRange={LABEL_Z} distanceFactor={28}>
+            <Html position={[0, h + 1.6, 0]} center zIndexRange={LABEL_Z} distanceFactor={38}>
                 <button
                     type="button"
                     onClick={() => select(project.slug)}
-                    className={`whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium shadow-md transition ${
+                    className={`flex items-center gap-1.5 whitespace-nowrap rounded-md py-1 pr-2 pl-1 text-xs font-medium shadow-md transition ${
                         isNear ? 'scale-110 bg-white text-slate-900' : 'bg-slate-900/80 text-white'
                     }`}
                 >
+                    {project.logo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={project.logo} alt="" className="h-5 w-5 rounded bg-white object-contain p-0.5" />
+                    ) : (
+                        <span className="h-5 w-1.5 rounded-full" style={{ background: color }} />
+                    )}
                     {project.featured && '★ '}
                     {project.title.split(' — ')[0]}
                     {allPrivate && ' 🔒'}
@@ -131,8 +138,17 @@ function HQ({ night }: { night: boolean }) {
                 <icosahedronGeometry args={[1.2]} />
                 <meshStandardMaterial color="#f472b6" emissive="#f472b6" emissiveIntensity={1} flatShading />
             </mesh>
+            {/* Statue of me in front of HQ */}
+            <RigidBody type="fixed" colliders={false}>
+                <CuboidCollider args={[1.4, 1, 1.4]} position={[0, 1, 7.5]} />
+            </RigidBody>
+            <mesh position={[0, 0.6, 7.5]} castShadow receiveShadow>
+                <cylinderGeometry args={[1.5, 1.8, 1.2, 8]} />
+                <meshStandardMaterial color={night ? '#334155' : '#e2e8f0'} flatShading />
+            </mesh>
+            <Avatar3D position={[0, 1.2, 7.5]} scale={1.6} waveHead />
             {isNear && <Marker height={17} color="#22d3ee" />}
-            <Html position={[0, 19.5, 0]} center zIndexRange={LABEL_Z} distanceFactor={34}>
+            <Html position={[0, 19.5, 0]} center zIndexRange={LABEL_Z} distanceFactor={45}>
                 <button
                     type="button"
                     onClick={() => select(HQ_SLUG)}
@@ -160,7 +176,7 @@ function DistrictSigns() {
                             <cylinderGeometry args={[0.12, 0.12, 3]} />
                             <meshStandardMaterial color="#334155" />
                         </mesh>
-                        <Html position={[0, 3.6, 0]} center zIndexRange={LABEL_Z} distanceFactor={36}>
+                        <Html position={[0, 3.6, 0]} center zIndexRange={LABEL_Z} distanceFactor={45}>
                             <div
                                 className="whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-bold text-white shadow"
                                 style={{ background: d.color }}

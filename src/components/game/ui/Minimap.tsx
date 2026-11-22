@@ -61,7 +61,12 @@ export default function Minimap() {
                     fill={d.color}
                     opacity={active === d.id ? 0.7 : 0.4}
                     className="cursor-pointer"
-                    onClick={() => teleport(d.position)}
+                    onClick={() => {
+                        // Land on the road at the plaza edge, clear of buildings.
+                        const [x, z] = d.position;
+                        const len = Math.hypot(x, z);
+                        teleport([x - (x / len) * 18, z - (z / len) * 18]);
+                    }}
                 >
                     <title>{`Go to ${d.name}`}</title>
                 </circle>
@@ -72,7 +77,7 @@ export default function Minimap() {
                 r={5}
                 fill="#22d3ee"
                 className="cursor-pointer"
-                onClick={() => teleport([0, 7])}
+                onClick={() => teleport([0, 16])}
             >
                 <title>Go to HQ</title>
             </circle>

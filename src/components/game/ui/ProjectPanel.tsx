@@ -1,44 +1,15 @@
 'use client';
 
-import { ExternalLink, Lock, MapPin } from 'lucide-react';
+import { ExternalLink, GitCommit, MapPin } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import { districtOf, projects, repoUrl, type Project } from '@/data/projects';
+import { districtOf, projects, type Project } from '@/data/projects';
+import RepoList from '@/components/project/RepoList';
+import ProjectLogo from '@/components/project/ProjectLogo';
+import ShotCarousel from '@/components/project/ShotCarousel';
 import { profile } from '@/data/profile';
 import { HQ_SLUG, useGameStore } from '@/stores/game.store';
 import { useIsMobile } from './useIsMobile';
-
-export function RepoList({ project }: { project: Project }) {
-    return (
-        <ul className="flex flex-col gap-1.5">
-            {project.repos.map((repo) => {
-                const url = repoUrl(repo);
-                return (
-                    <li key={repo.name}>
-                        {url ? (
-                            <a
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-between rounded-md border px-3 py-2 text-sm hover:bg-accent"
-                            >
-                                <span className="font-mono">{repo.name}</span>
-                                <ExternalLink className="h-4 w-4 opacity-60" />
-                            </a>
-                        ) : (
-                            <div className="flex items-center justify-between rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
-                                <span className="font-mono">{repo.name}</span>
-                                <span className="flex items-center gap-1 text-xs">
-                                    <Lock className="h-3.5 w-3.5" /> Private
-                                </span>
-                            </div>
-                        )}
-                    </li>
-                );
-            })}
-        </ul>
-    );
-}
 
 function ProjectBody({ project }: { project: Project }) {
     const district = districtOf(project.district);
@@ -49,10 +20,32 @@ function ProjectBody({ project }: { project: Project }) {
                     <span className="inline-block h-2 w-2 rounded-full" style={{ background: district.color }} />
                     {district.name} · {project.year}
                 </div>
-                <SheetTitle className="text-xl">{project.title}</SheetTitle>
+                <div className="flex items-center gap-3">
+                    <ProjectLogo project={project} className="h-12 w-12" />
+                    <div className="min-w-0">
+                        <SheetTitle className="text-xl">{project.title}</SheetTitle>
+                        <div className="flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
+                            {project.org && <span>{project.org}</span>}
+                            <span className="flex items-center gap-1">
+                                <GitCommit className="h-3.5 w-3.5" /> {project.commits} commits
+                            </span>
+                        </div>
+                    </div>
+                </div>
                 <SheetDescription>{project.summary}</SheetDescription>
+                {project.liveUrl && (
+                    <a
+                        href={project.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-fit items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                    >
+                        Visit live site <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                )}
             </SheetHeader>
             <div className="flex flex-col gap-5 px-4 pb-6">
+                <ShotCarousel project={project} />
                 <section>
                     <h3 className="mb-2 text-sm font-semibold">Highlights</h3>
                     <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
@@ -85,6 +78,12 @@ function ProfileBody() {
         <>
             <SheetHeader>
                 <div className="text-xs font-semibold text-cyan-500">HQ</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={profile.avatar}
+                    alt={profile.name}
+                    className="h-20 w-20 rounded-2xl object-cover shadow-md ring-2 ring-cyan-400/60"
+                />
                 <SheetTitle className="text-2xl">{profile.name}</SheetTitle>
                 <SheetDescription>
                     {profile.role} · {profile.tagline}
@@ -121,7 +120,7 @@ function ProfileBody() {
                                     {e.role} · {e.company}
                                 </div>
                                 <div className="text-xs text-muted-foreground">{e.period}</div>
-                                <p className="text-sm text-muted-foreground">{e.summary}</p>
+                                <p className="text-sm text-muted-foreground">{e.points[0]}</p>
                             </li>
                         ))}
                     </ol>

@@ -1,6 +1,6 @@
 import { GITHUB_USER } from './profile';
 
-export type DistrictId = 'fleet' | 'ai' | 'bots' | 'web3' | 'iot' | 'web' | 'toolkit';
+export type DistrictId = 'fleet' | 'ai' | 'bots' | 'web3' | 'gov' | 'commerce' | 'toolkit';
 
 export interface District {
     id: DistrictId;
@@ -14,8 +14,14 @@ export interface District {
 /**
  * A repo is either public (linkable) or private. Private repos keep only
  * their name: no URL is stored and none is ever built for them.
+ * `owner` defaults to the personal account; org repos set it.
  */
-export type Repo = { name: string; private?: false } | { name: string; private: true };
+export type Repo = { name: string; owner?: string; private?: false } | { name: string; owner?: string; private: true };
+
+export interface Shot {
+    src: string;
+    caption: string;
+}
 
 export interface Project {
     slug: string;
@@ -26,75 +32,320 @@ export interface Project {
     stack: string[];
     repos: Repo[];
     year: number;
+    /** Commits by me across the project's repos (from GitHub contributors). */
+    commits: number;
+    /** Organization the work was done under, if any. */
+    org?: string;
+    logo?: string;
+    /** Public product URL (never a private repo link). */
+    liveUrl?: string;
+    shots?: Shot[];
     featured?: boolean;
 }
 
 /** GitHub link for a public repo, or null for a private one. */
 export function repoUrl(repo: Repo): string | null {
     if (repo.private) return null;
-    return `https://github.com/${GITHUB_USER}/${repo.name}`;
+    return `https://github.com/${repo.owner ?? GITHUB_USER}/${repo.name}`;
 }
 
 export const districts: District[] = [
     {
-        id: 'fleet',
-        name: 'Fleet & Telematics',
-        blurb: 'GPS trackers, fleet and vehicle management.',
-        color: '#f59e0b',
+        id: 'gov',
+        name: 'HealthTech',
+        blurb: 'Hospital systems for RSUD dr. Abdul Aziz.',
+        color: '#d4a03a',
         position: [0, -46],
     },
     {
         id: 'ai',
         name: 'AI & Data Intelligence',
-        blurb: 'Collectors, computer vision and data products.',
+        blurb: 'Regulation intelligence, computer vision and data products.',
         color: '#8b5cf6',
         position: [40, -24],
     },
     {
         id: 'bots',
         name: 'Automation & Bots',
-        blurb: 'Bots and agents that run on their own.',
+        blurb: 'Bots and services that run on their own.',
         color: '#06b6d4',
         position: [42, 22],
     },
     {
         id: 'web3',
         name: 'Web3 Lab',
-        blurb: 'Solana, wallets and NFTs.',
-        color: '#ec4899',
+        blurb: 'Solana trading automation and NFT tooling.',
+        color: '#a855f7',
         position: [4, 46],
     },
     {
-        id: 'iot',
-        name: 'IoT Flood Lab',
-        blurb: 'Flood sensors, WebGIS and the systems around them.',
-        color: '#3b82f6',
+        id: 'fleet',
+        name: 'Logistics & Telematics',
+        blurb: 'Depots, vessels, fleets and the trackers that feed them.',
+        color: '#f59e0b',
         position: [-38, 28],
     },
     {
-        id: 'web',
-        name: 'Web Apps City',
-        blurb: 'Client platforms, stores and booking systems.',
+        id: 'commerce',
+        name: 'Enterprise & Commerce',
+        blurb: 'ERP and CRM ecosystems, stores and booking platforms.',
         color: '#10b981',
         position: [-42, -18],
     },
     {
         id: 'toolkit',
         name: 'Toolkit Dock',
-        blurb: 'Templates and API foundations.',
+        blurb: 'Backend foundations reused across projects.',
         color: '#64748b',
         position: [-18, -42],
     },
 ];
 
 export const projects: Project[] = [
-    // Fleet & Telematics
+    // HealthTech
+    {
+        slug: 'si-kain-raja',
+        title: 'SI KAIN RAJA',
+        district: 'gov',
+        org: 'RSUD dr. Abdul Aziz',
+        summary:
+            'Integrated information and education system for inpatient and outpatient care at RSUD dr. Abdul Aziz Singkawang: room availability, clinics, lab, radiology and ambulance rates, blood donors and a hospital map.',
+        highlights: ['Live room availability and clinic schedules', 'Lab, radiology, procedure and ambulance rates', 'Installable PWA'],
+        stack: ['Next.js', 'TypeScript', 'SCSS'],
+        repos: [{ name: 'FrontEnd-siKainRaja', owner: 'RSUD-ABDUL-AZIZ-UNOFFICIALLY' }],
+        year: 2026,
+        commits: 59,
+        logo: '/logos/sikainraja.webp',
+        liveUrl: 'https://kainraja.spairum.my.id',
+        featured: true,
+        shots: [
+            { src: '/shots/kainraja.webp', caption: 'Patient information home' },
+            { src: '/shots/kainraja-kamar.webp', caption: 'Live room availability per ward' },
+            { src: '/shots/kainraja-poli.webp', caption: 'Clinic information' },
+            { src: '/shots/kainraja-lab.webp', caption: 'Lab test rates' },
+        ],
+    },
+    {
+        slug: 'rsud-profile',
+        title: 'RSUD Hospital Portal',
+        district: 'gov',
+        org: 'RSUD dr. Abdul Aziz',
+        summary:
+            'Hospital portal with public pages for services, schedules and announcements, an admin dashboard for content, and a NestJS API.',
+        highlights: ['Admin CMS for articles, staff and services', 'NestJS backend', 'Dashboard for the Hardin service'],
+        stack: ['Next.js', 'NestJS', 'Tailwind', 'TypeScript'],
+        repos: [
+            { name: 'profile-rsudaa', owner: 'RSUD-ABDUL-AZIZ-UNOFFICIALLY' },
+            { name: 'nest-backend-rsudaa', owner: 'RSUD-ABDUL-AZIZ-UNOFFICIALLY' },
+            { name: 'dashboard-hardin', owner: 'RSUD-ABDUL-AZIZ-UNOFFICIALLY' },
+        ],
+        year: 2026,
+        commits: 126,
+        logo: '/logos/rsudaa.webp',
+        liveUrl: 'https://rsudaa.singkawangkota.go.id',
+        shots: [{ src: '/shots/rsud.webp', caption: 'Public service website' }],
+        featured: true,
+    },
+
+    // AI & Data Intelligence
+    {
+        slug: 'alignment-intelligence',
+        title: 'Alignment Intelligence',
+        district: 'ai',
+        summary:
+            'Regulatory intelligence workspace: reads how regulations relate, finds policy gaps and writes analysis with article references. A collector crawls JDIHN and feeds the knowledge library.',
+        highlights: [
+            'JDIHN crawler with PostgreSQL checkpoints, no browser automation',
+            'Per-ministry cron schedules with a live log stream',
+            'Python, NestJS and Next.js services',
+        ],
+        stack: ['Python', 'NestJS', 'Next.js', 'PostgreSQL'],
+        repos: [
+            { name: 'alignment-intelligence-nest', private: true },
+            { name: 'alignment-intelligence-next', private: true },
+            { name: 'alignment-intelligence-collector' },
+            { name: 'alignment-intelligence-cron' },
+        ],
+        year: 2026,
+        commits: 77,
+        logo: '/logos/alignment.svg',
+        shots: [
+            { src: '/shots/alignment.webp', caption: 'Workspace sign-in' },
+            { src: '/shots/alignment-cron.webp', caption: 'JDIHN collector dashboard' },
+        ],
+        featured: true,
+    },
+    {
+        slug: 'andalalin',
+        title: 'LUMA.io — Andalalin Traffic Counter',
+        district: 'ai',
+        summary:
+            'Counts vehicles in traffic survey videos with YOLO and ByteTrack, aggregates intervals and generates an analysis workbook.',
+        highlights: ['Resumable chunked video upload', 'Two-direction counting line', 'MC / LV / HV classification'],
+        stack: ['Python', 'FastAPI', 'YOLO', 'ByteTrack', 'Next.js'],
+        repos: [{ name: 'andalalin-detector-be' }, { name: 'andalalin-detector-frontend', private: true }],
+        year: 2026,
+        commits: 109,
+        featured: true,
+        shots: [
+            { src: '/shots/app-luma-dashboard.webp', caption: 'Dashboard: detections, quota, recent jobs (demo data)' },
+            { src: '/shots/app-luma-projects.webp', caption: 'Projects list (demo data)' },
+            { src: '/shots/app-luma-home.webp', caption: 'Upload a traffic video to detect' },
+        ],
+    },
+    {
+        slug: 'lead-ai',
+        title: 'Lead.AI',
+        district: 'ai',
+        org: 'LEAD-AI-PROJECT',
+        summary: 'Data cleaning services for pharma and biotech AI teams, in collaboration with NUS and ITB.',
+        highlights: ['Marketing site and app', 'NestJS backend'],
+        stack: ['Next.js', 'NestJS', 'TypeScript'],
+        repos: [
+            { name: 'lead-ai-frontend', owner: 'LEAD-AI-PROJECT' },
+            { name: 'lead-ai-backend', owner: 'LEAD-AI-PROJECT', private: true },
+        ],
+        year: 2025,
+        commits: 98,
+        logo: '/logos/lead-ai.webp',
+        liveUrl: 'https://lead-ai-rho.vercel.app',
+        shots: [{ src: '/shots/lead-ai.webp', caption: 'Landing page' }],
+    },
+    {
+        slug: 'leakage-intelligence',
+        title: 'Leakage Intelligence',
+        district: 'ai',
+        summary:
+            'Operational hub on WhatsApp: receives messages by webhook, extracts sales and issue reports from text or images, and builds daily recaps.',
+        highlights: ['Full message audit log', 'Extraction from text and images', 'Daily sales and issue recaps'],
+        stack: ['NestJS', 'TypeScript', 'PostgreSQL', 'WhatsApp'],
+        repos: [{ name: 'leakage_intelligence' }],
+        year: 2026,
+        commits: 2,
+        shots: [
+            { src: '/shots/illus-leakage.webp', caption: 'Illustration: WhatsApp report to daily recap' },
+        ],
+    },
+
+    // Automation & Bots
+    {
+        slug: 'orbie',
+        title: 'Orbie Bot',
+        district: 'bots',
+        org: 'Zenika Ruang Kreasi',
+        summary: 'Go bot service with HTTP and gRPC transports, Midtrans payments and Prometheus metrics.',
+        highlights: ['Clean architecture with gRPC clients', 'Midtrans payment integration', 'Infrastructure as code'],
+        stack: ['Go', 'Gin', 'gRPC', 'PostgreSQL', 'Midtrans'],
+        repos: [{ name: 'orbie_bot', owner: 'ZenikaRuangKreasi', private: true }],
+        year: 2025,
+        commits: 78,
+        shots: [
+            { src: '/shots/illus-orbie.webp', caption: 'Illustration: service architecture' },
+        ],
+    },
+    {
+        slug: 'toolbox-whatsapp',
+        title: 'Toolbox WhatsApp',
+        district: 'bots',
+        summary:
+            'Read-only WhatsApp toolbox: a collector stores chat history, a REST API serves it, and an MCP server lets an AI assistant read it.',
+        highlights: ['OCR, Whisper and PDF extraction for media', 'Allowlisted chats only'],
+        stack: ['TypeScript', 'Baileys', 'PostgreSQL', 'MCP'],
+        repos: [{ name: 'toolbox-whatsapp', private: true }],
+        year: 2026,
+        commits: 22,
+        shots: [
+            { src: '/shots/illus-toolbox.webp', caption: 'Illustration: collector to MCP pipeline' },
+        ],
+    },
+    {
+        slug: 'ai-tooling',
+        title: 'AI Dev Tooling',
+        district: 'bots',
+        summary: 'Custom MCP servers and skills that scaffold projects and automate daily development work.',
+        highlights: ['Full-stack scaffolding (Next + Go / Nest)', 'Release automation'],
+        stack: ['TypeScript', 'MCP'],
+        repos: [
+            { name: 'claude-skills', private: true },
+            { name: 'claude-mcp', private: true },
+        ],
+        year: 2026,
+        commits: 20,
+        shots: [
+            { src: '/shots/illus-tooling.webp', caption: 'Illustration: scaffolding a full-stack project' },
+        ],
+    },
+
+    // Web3 Lab
+    {
+        slug: 'masoul-sniper',
+        title: 'MaSoul Sniper',
+        district: 'web3',
+        summary:
+            'Solana memecoin trading bot: finds new tokens, filters them through quantitative and safety checks, buys through Jupiter and manages exits on its own.',
+        highlights: [
+            'Take profit, trailing stop, stop loss and rug exit',
+            'Controlled from Telegram, one wallet per chat',
+            'Live and dry-run modes side by side',
+        ],
+        stack: ['TypeScript', 'Solana', 'Jupiter', 'Telegram'],
+        repos: [{ name: 'solana-automation' }],
+        year: 2026,
+        commits: 157,
+        logo: '/logos/solana.svg',
+        featured: true,
+        shots: [
+            { src: '/shots/illus-masoul.webp', caption: 'Illustration: Telegram control and trade pipeline' },
+        ],
+    },
+    {
+        slug: 'nft-metadata',
+        title: 'NFT Metadata Generator',
+        district: 'web3',
+        summary:
+            'Generates NFT collections from art layers (background, skin, outfit, eyes, mouth, glasses, headwear) with rarity-weighted traits and metadata.',
+        highlights: ['Rarity weights per trait', '3000×3000 artwork with matching metadata JSON', 'Batch generation of 200 editions'],
+        stack: ['JavaScript', 'Node.js', 'Canvas', 'NFT'],
+        repos: [{ name: 'NFT-generate-metadata' }],
+        year: 2023,
+        commits: 5,
+        shots: [
+            { src: '/shots/nft-collection.webp', caption: 'Generated collection' },
+            { src: '/shots/nft/nft-1.webp', caption: 'Edition: Afro Cut, Elon shade, Black Hoodie' },
+            { src: '/shots/nft/nft-4.webp', caption: 'Edition: Balaclava, Dead Inside, Basketball Jersey' },
+            { src: '/shots/nft/nft-3.webp', caption: 'Edition: Long hair cap, Hexagon shades, Backpack' },
+        ],
+    },
+
+    // Logistics & Telematics
+    {
+        slug: 'ids',
+        title: 'IDS — Integrated Depot System',
+        district: 'fleet',
+        org: 'Samudera Indonesia Group',
+        summary:
+            'Integrated system for container depot operations at Samudera Indonesia Group: container, vessel and depot management with IoT from the depot floor and management reporting.',
+        highlights: [
+            'NestJS and Go services for logistics and maritime operations',
+            'IoT integrated into physical depot infrastructure for real-time monitoring',
+            'JasperReports modules for management analytics',
+        ],
+        stack: ['NestJS', 'Go', 'Next.js', 'IoT', 'JasperReports'],
+        logo: '/logos/samudera-mark.webp',
+        repos: [],
+        year: 2026,
+        commits: 0,
+        featured: true,
+        shots: [
+            { src: '/shots/illus-ids.webp', caption: 'Illustration: depot yard, gate and IoT overview' },
+        ],
+    },
     {
         slug: 'fms',
         title: 'FMS — Fleet Management System',
         district: 'fleet',
         summary:
-            'Fleet platform where GPS trackers connect over raw TCP to a Go backend, with separate apps for administrators, supervisors and drivers.',
+            'Fleet platform for mining haulage: GPS trackers connect over raw TCP to a Go backend, and every trip from pit to stockpile is recorded with duration, distance and fuel.',
         highlights: [
             'Single TCP port that detects the device protocol from the first byte',
             'Administrator and supervisor dashboards',
@@ -108,258 +359,120 @@ export const projects: Project[] = [
             { name: 'fms-mdt' },
         ],
         year: 2026,
+        commits: 71,
+        logo: '/logos/fms.svg',
+        shots: [
+            { src: '/shots/fms-admin.webp', caption: 'Administrator app' },
+            { src: '/shots/fms-supervisor.webp', caption: 'Supervisor app' },
+        ],
         featured: true,
     },
     {
-        slug: 'teltonika-test',
-        title: 'Teltonika FMC150 Test Bench',
-        district: 'fleet',
-        summary: 'Tooling to test and decode data from Teltonika FMC150 trackers.',
-        highlights: ['Codec parsing and device testing'],
-        stack: ['TypeScript', 'TCP'],
-        repos: [{ name: 'teltonika_fmc150test', private: true }],
-        year: 2026,
-    },
-    {
         slug: 'vms',
-        title: 'VMS — Vehicle Management System',
+        title: 'VMS — Vessel Monitoring System',
         district: 'fleet',
-        summary: 'Go REST API with JWT auth and a Next.js frontend for managing vehicles.',
-        highlights: ['JWT access + refresh, httpOnly cookies', 'Prisma migrations with a Go query builder'],
+        summary:
+            'Vessel monitoring on one map: position, speed and heading of every tugboat and barge live from Teltonika trackers, plus fuel use per engine calibrated against fuel models, with records and alerts.',
+        highlights: [
+            'Vessels, engines and devices management',
+            'Fuel models with tank calibration tables',
+            'Fuel records and anomaly alerts',
+        ],
         stack: ['Go', 'Gin', 'PostgreSQL', 'Next.js'],
         repos: [
             { name: 'vms-backend', private: true },
             { name: 'vms-frontend', private: true },
         ],
         year: 2026,
+        commits: 30,
+        shots: [
+            { src: '/shots/app-vms-map.webp', caption: 'Live fleet map (demo data)' },
+            { src: '/shots/app-vms-vessels.webp', caption: 'Vessel registry (demo data)' },
+            { src: '/shots/app-vms-home.webp', caption: 'Sign-in' },
+        ],
     },
 
-    // AI & Data Intelligence
+    // Enterprise & Commerce
     {
-        slug: 'alignment-intelligence',
-        title: 'Alignment Intelligence',
-        district: 'ai',
+        slug: 'amani',
+        title: 'Amani Admin Platform',
+        district: 'commerce',
+        org: 'PT Amani Group Indonesia',
         summary:
-            'Collects regulations from JDIHN, downloads their PDFs and feeds a knowledge library, with a cron dashboard to schedule and watch collectors per ministry.',
+            'Ecosystem of 8+ business apps (CRM, ERP, supplier management) tied together by an admin platform that centralizes workflows for eight stakeholder groups.',
         highlights: [
-            'Crawler with PostgreSQL checkpoints, no browser automation',
-            'Per-ministry cron schedules with a live log stream',
-            'Python, NestJS and Next.js services',
+            'RabbitMQ messaging between services',
+            'Real-time updates with Server-Sent Events',
+            'Atomic Design frontend; legacy CRM modules modernized',
         ],
-        stack: ['Python', 'NestJS', 'Next.js', 'PostgreSQL'],
-        repos: [
-            { name: 'alignment-intelligence-collector' },
-            { name: 'alignment-intelligence-cron' },
-            { name: 'alignment-intelligence-nest', private: true },
-            { name: 'alignment-intelligence-next', private: true },
-            { name: 'alignment-intelligence-python', private: true },
-        ],
-        year: 2026,
-        featured: true,
-    },
-    {
-        slug: 'leakage-intelligence',
-        title: 'Leakage Intelligence',
-        district: 'ai',
-        summary:
-            'Operational hub on WhatsApp: receives messages by webhook, extracts sales and issue reports from text or images, and builds daily recaps.',
-        highlights: ['Full message audit log', 'Extraction from text and images', 'Daily sales and issue recaps'],
-        stack: ['NestJS', 'TypeScript', 'PostgreSQL', 'WhatsApp'],
-        repos: [{ name: 'leakage_intelligence' }],
-        year: 2026,
-        featured: true,
-    },
-    {
-        slug: 'andalalin',
-        title: 'Andalalin Traffic Counter',
-        district: 'ai',
-        summary:
-            'Counts vehicles in traffic survey videos with YOLO and ByteTrack, aggregates intervals and generates an analysis workbook.',
-        highlights: ['Resumable chunked video upload', 'Two-direction counting line', 'MC / LV / HV classification'],
-        stack: ['Python', 'FastAPI', 'YOLO', 'ByteTrack', 'Next.js'],
-        repos: [{ name: 'andalalin-detector-be' }, { name: 'andalalin-detector-frontend', private: true }],
-        year: 2026,
-    },
-    {
-        slug: 'fashype',
-        title: 'Fashype Engine',
-        district: 'ai',
-        summary: 'Fashion data engine with a NestJS API and Python processing.',
-        highlights: ['NestJS service', 'Python processing engine'],
-        stack: ['NestJS', 'Python'],
-        repos: [{ name: 'fashype-engine-nest' }, { name: 'fashype-engine-python' }],
-        year: 2026,
-    },
-    {
-        slug: 'lead-ai',
-        title: 'Lead AI',
-        district: 'ai',
-        summary: 'AI-assisted lead generation app.',
-        highlights: ['Next.js frontend'],
-        stack: ['Next.js', 'TypeScript', 'AI'],
-        repos: [
-            { name: 'lead-ai', private: true },
-            { name: 'lead-ai-frontend', private: true },
-        ],
+        stack: ['NestJS', 'Next.js', 'RabbitMQ', 'SSE', 'PostgreSQL'],
+        repos: [],
         year: 2025,
+        commits: 0,
         featured: true,
-    },
-    {
-        slug: 'fraudguard',
-        title: 'FraudGuard Marine (demo)',
-        district: 'ai',
-        summary: 'Demo of a fraud detection dashboard for the marine sector.',
-        highlights: ['Next.js dashboard'],
-        stack: ['Next.js', 'TypeScript'],
-        repos: [{ name: 'demo-fraudguard-marine' }],
-        year: 2026,
-    },
-    {
-        slug: 'auto-clip',
-        title: 'Auto Clip',
-        district: 'ai',
-        summary: 'Automatic video clipping pipeline.',
-        highlights: ['Python video processing'],
-        stack: ['Python'],
-        repos: [{ name: 'auto-clip', private: true }],
-        year: 2026,
-    },
-
-    // Automation & Bots
-    {
-        slug: 'masoul-sniper',
-        title: 'MaSoul Sniper',
-        district: 'bots',
-        summary:
-            'Solana memecoin trading bot: finds new tokens, filters them through quantitative and safety checks, buys through Jupiter and manages exits on its own.',
-        highlights: [
-            'Take profit, trailing stop, stop loss and rug exit',
-            'Controlled from Telegram, one wallet per chat',
-            'Live and dry-run modes side by side',
+        shots: [
+            { src: '/shots/illus-amani.webp', caption: 'Illustration: admin hub over 8+ apps' },
         ],
-        stack: ['TypeScript', 'Solana', 'Jupiter', 'Telegram'],
-        repos: [{ name: 'solana-automation' }],
-        year: 2026,
-        featured: true,
     },
     {
-        slug: 'thread-automation',
-        title: 'Thread Automation',
-        district: 'bots',
-        summary:
-            'Bot that scans entertainment news, writes engagement captions with OpenAI and posts them to Threads through Playwright.',
-        highlights: ['Resolves the original publisher URL', 'Attaches the article image'],
-        stack: ['TypeScript', 'OpenAI', 'Playwright'],
-        repos: [{ name: 'thread-automation' }],
-        year: 2026,
-    },
-    {
-        slug: 'toolbox-whatsapp',
-        title: 'Toolbox WhatsApp',
-        district: 'bots',
-        summary:
-            'Read-only WhatsApp toolbox: a collector stores chat history, a REST API serves it, and an MCP server lets an AI assistant read it.',
-        highlights: ['OCR, Whisper and PDF extraction for media', 'Allowlisted chats only'],
-        stack: ['TypeScript', 'Baileys', 'PostgreSQL', 'MCP'],
-        repos: [{ name: 'toolbox-whatsapp', private: true }],
-        year: 2026,
-    },
-    {
-        slug: 'claude-tooling',
-        title: 'AI Assistant Tooling',
-        district: 'bots',
-        summary: 'Custom MCP servers and skills that automate daily development work.',
-        highlights: ['Project scaffolding skills', 'MCP integrations'],
-        stack: ['TypeScript', 'MCP'],
+        slug: 'kratify',
+        title: 'Kratify',
+        district: 'commerce',
+        org: 'Kratify',
+        summary: 'Export storefront for Indonesian kratom: catalog, cart, international orders, Midtrans payments and Biteship shipping, on a Go backend and Next.js frontend.',
+        highlights: ['Midtrans payment flow', 'Biteship shipping rates and tracking', 'Redis rate limiting, Swagger docs'],
+        stack: ['Go', 'Gin', 'PostgreSQL', 'Redis', 'Next.js'],
         repos: [
-            { name: 'claude-mcp', private: true },
-            { name: 'claude-skills', private: true },
+            { name: 'kratify-backend', owner: 'Kratify-org', private: true },
+            { name: 'kratify-frontend', owner: 'Kratify-org', private: true },
         ],
         year: 2026,
-    },
-
-    // Web3 Lab
-    {
-        slug: 'nft-metadata',
-        title: 'NFT Metadata Generator',
-        district: 'web3',
-        summary: 'Generates NFT metadata for collections.',
-        highlights: ['Batch metadata generation'],
-        stack: ['JavaScript', 'NFT'],
-        repos: [{ name: 'NFT-generate-metadata' }],
-        year: 2023,
+        commits: 358,
         featured: true,
+        shots: [
+            { src: '/shots/app-kratify-catalog.webp', caption: 'Catalog with discounts and wishlist (demo data)' },
+            { src: '/shots/app-kratify-detail.webp', caption: 'Product detail with international quote (demo data)' },
+            { src: '/shots/app-kratify-home.webp', caption: 'Storefront home' },
+            { src: '/shots/app-kratify-home-products.webp', caption: 'Why Kratify: quality, transparency, sourcing' },
+        ],
     },
     {
-        slug: 'solana-rust',
-        title: 'Solana Rust App',
-        district: 'web3',
-        summary: 'Solana program written in Rust.',
-        highlights: ['On-chain program'],
-        stack: ['Rust', 'Solana'],
-        repos: [{ name: 'solana_rust_app' }],
+        slug: 'onlydeath',
+        title: 'OnlyDeath Records',
+        district: 'commerce',
+        summary: 'Online store for an independent record label: catalog, cart, checkout and order tracking.',
+        highlights: ['Product catalog and cart', 'Order tracking page', 'NestJS backend'],
+        stack: ['Next.js', 'NestJS', 'TypeScript'],
+        repos: [{ name: 'onlydeath-frontend' }, { name: 'onlydeath-backend' }],
+        year: 2026,
+        commits: 32,
+        logo: '/logos/onlydeath.webp',
+        liveUrl: 'https://onlydeathrecords.com',
+        shots: [
+            { src: '/shots/onlydeath.webp', caption: 'Home' },
+            { src: '/shots/onlydeath-catalog.webp', caption: 'Catalog' },
+        ],
+    },
+    {
+        slug: 'peminjaman-gedung',
+        title: 'Hall Booking System',
+        district: 'commerce',
+        summary: 'Booking system for a parish multipurpose hall, from request to approval.',
+        highlights: ['Booking flow and admin approval', 'NestJS backend'],
+        stack: ['Next.js', 'NestJS', 'TypeScript'],
+        repos: [{ name: 'frontend-peminjaman-gedung' }, { name: 'backend-peminjaman-gedung' }],
         year: 2025,
-    },
-    {
-        slug: 'connect-wallet',
-        title: 'Connect Wallet',
-        district: 'web3',
-        summary: 'Wallet connection experiments with MetaMask and global state.',
-        highlights: ['MetaMask integration', 'Global wallet state'],
-        stack: ['TypeScript', 'Web3'],
-        repos: [{ name: 'connect-wallet' }, { name: 'connect-wallet-globals-metamask' }, { name: 'first_web3' }],
-        year: 2025,
-    },
-
-    // IoT Flood Lab
-    {
-        slug: 'iot-banjir',
-        title: 'IoT Flood Monitoring',
-        district: 'iot',
-        summary: 'Flood monitoring system with IoT sensors, a web dashboard and WebGIS maps.',
-        highlights: ['Sensor data dashboard', 'WebGIS flood map'],
-        stack: ['PHP', 'IoT', 'WebGIS'],
-        repos: [
-            { name: 'system-iot-banjir' },
-            { name: 'system-banjir-iot' },
-            { name: 'skripsi_iot' },
-            { name: 'system-webgis-banjir', private: true },
-            { name: 'IOT_BANJIR', private: true },
+        commits: 210,
+        logo: '/logos/peminjaman.webp',
+        shots: [
+            { src: '/shots/app-hall-list.webp', caption: 'Hall listing with prices and addresses (demo data)' },
         ],
-        year: 2024,
-    },
-    {
-        slug: 'water-echoes',
-        title: 'Water Echoes',
-        district: 'iot',
-        summary: 'Water monitoring app with a website and an Android client.',
-        highlights: ['Web and Android apps'],
-        stack: ['PHP', 'JavaScript', 'Android'],
-        repos: [
-            { name: 'waterEchoes.app' },
-            { name: 'waterEchoes_Android' },
-            { name: 'WaterEchoesMobile', private: true },
-            { name: 'waterEchoesWebsite', private: true },
-        ],
-        year: 2023,
-    },
-
-    // Web Apps City
-    {
-        slug: 'omnitec',
-        title: 'Omnitec',
-        district: 'web',
-        summary: 'Marketing site for a technology partner serving enterprise, government and SaaS teams.',
-        highlights: ['Next.js 16, React 19, Tailwind v4, framer-motion'],
-        stack: ['Next.js', 'Tailwind', 'framer-motion'],
-        repos: [{ name: 'stackcraft_frontend' }],
-        year: 2026,
     },
     {
         slug: 'warungku',
         title: 'Warungku',
-        district: 'web',
-        summary: 'Store and admin platform for small shops.',
+        district: 'commerce',
+        summary: 'Storefront and admin platform for small shops.',
         highlights: ['Storefront and admin apps', 'NestJS backends'],
         stack: ['Next.js', 'NestJS', 'TypeScript'],
         repos: [
@@ -369,68 +482,24 @@ export const projects: Project[] = [
             { name: 'backend-store-warungku' },
         ],
         year: 2025,
-    },
-    {
-        slug: 'peminjaman-gedung',
-        title: 'Hall Booking System',
-        district: 'web',
-        summary: 'Booking system for a parish multipurpose hall.',
-        highlights: ['Booking flow and admin'],
-        stack: ['Next.js', 'NestJS'],
-        repos: [
-            { name: 'frontend-peminjaman-gedung' },
-            { name: 'backend-peminjaman-gedung' },
-            { name: 'frontend-gedung-serbaguna-paroki' },
+        commits: 68,
+        shots: [
+            { src: '/shots/app-warung-store.webp', caption: 'Store inventory: stock, price, actions (demo data)' },
         ],
-        year: 2025,
     },
     {
-        slug: 'maricarid',
-        title: 'Maricarid',
-        district: 'web',
-        summary: 'Web platform with a Next.js frontend and its own backend.',
-        highlights: ['Deployed on Vercel'],
+        slug: 'maricar',
+        title: 'Maricar',
+        district: 'commerce',
+        summary: 'Company site for an integrated marine and logistics services group.',
+        highlights: ['Marine traffic, gallery and services pages', 'Deployed on Vercel'],
         stack: ['Next.js', 'Node.js'],
         repos: [{ name: 'frontend_maricarid' }, { name: 'backend_maricarid' }],
         year: 2024,
-    },
-    {
-        slug: 'rsud-aa',
-        title: 'RSUD AA',
-        district: 'web',
-        summary: 'Hospital web system.',
-        highlights: ['NestJS backend'],
-        stack: ['NestJS', 'TypeScript'],
-        repos: [{ name: 'rsud-aa-amirullazmi' }, { name: 'nest-backend-rsudaa' }],
-        year: 2024,
-    },
-    {
-        slug: 'jurusanku',
-        title: 'JurusanKu',
-        district: 'web',
-        summary: 'Helps students explore study majors.',
-        highlights: ['Next.js app'],
-        stack: ['Next.js'],
-        repos: [{ name: 'JurusanKu' }],
-        year: 2024,
-    },
-    {
-        slug: 'more-web',
-        title: 'More Web Apps',
-        district: 'web',
-        summary: 'Other client and personal web apps.',
-        highlights: ['Riverb, OnlyDeath, Embol, Weon, Labterpadu UNTAN, Spiritway'],
-        stack: ['Next.js', 'NestJS', 'PHP', 'JavaScript'],
-        repos: [
-            { name: 'riverb-frontend' },
-            { name: 'onlydeath-frontend' },
-            { name: 'onlydeath-backend' },
-            { name: 'Embol' },
-            { name: 'weon-e' },
-            { name: 'system-labterpadu-untan' },
-            { name: 'frontend-spiritway' },
-        ],
-        year: 2026,
+        commits: 57,
+        logo: '/logos/maricar.webp',
+        liveUrl: 'https://frontend-maricarid.vercel.app',
+        shots: [{ src: '/shots/maricar.webp', caption: 'Home page' }],
     },
 
     // Toolkit Dock
@@ -438,22 +507,17 @@ export const projects: Project[] = [
         slug: 'golang-be-template',
         title: 'Golang Backend Template',
         district: 'toolkit',
-        summary: 'Gin backend with clean architecture, Prisma migrations and a custom query builder.',
+        summary:
+            'Gin backend with clean architecture, Prisma migrations and a custom query builder. The base for Kratify and VMS.',
         highlights: ['Viper config', 'Repository / usecase / handler layers'],
         stack: ['Go', 'Gin', 'Prisma', 'PostgreSQL'],
-        repos: [{ name: 'golang-be-template' }, { name: 'golang-restfull-api' }],
+        repos: [{ name: 'golang-be-template' }],
         year: 2026,
+        commits: 11,
         featured: true,
-    },
-    {
-        slug: 'coin-satelit-docs',
-        title: 'Coin Satelit API Docs',
-        district: 'toolkit',
-        summary: 'API documentation site.',
-        highlights: ['Hosted documentation'],
-        stack: ['JavaScript'],
-        repos: [{ name: 'coin-satelit-api-documentation', private: true }],
-        year: 2025,
+        shots: [
+            { src: '/shots/illus-golang.webp', caption: 'Illustration: project layout and dev server' },
+        ],
     },
 ];
 

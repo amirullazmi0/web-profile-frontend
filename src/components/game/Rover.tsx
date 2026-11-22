@@ -7,6 +7,7 @@ import { CuboidCollider, RigidBody, type RapierRigidBody } from '@react-three/ra
 import { Quaternion, Vector3, type Group } from 'three';
 import { buildingPositions, districts } from '@/data/projects';
 import { HQ_SLUG, gameRuntime, useGameStore } from '@/stores/game.store';
+import Avatar3D from './Avatar3D';
 
 export type Controls = 'forward' | 'back' | 'left' | 'right' | 'brake' | 'reset';
 
@@ -17,9 +18,10 @@ const TURN_RATE = 2.2;
 const NEAR_DISTANCE = 7.5;
 const START: [number, number, number] = [0, 1, 16];
 
-const proximityTargets: { slug: string; x: number; z: number }[] = [
-    { slug: HQ_SLUG, x: 0, z: 0 },
-    ...Object.entries(buildingPositions).map(([slug, [x, z]]) => ({ slug, x, z })),
+// HQ is larger and has a statue in front, so it gets a wider radius.
+const proximityTargets: { slug: string; x: number; z: number; r: number }[] = [
+    { slug: HQ_SLUG, x: 0, z: 0, r: 12 },
+    ...Object.entries(buildingPositions).map(([slug, [x, z]]) => ({ slug, x, z, r: NEAR_DISTANCE })),
 ];
 
 const quat = new Quaternion();
@@ -44,10 +46,12 @@ export default function Rover() {
         const keys = getKeys();
         const tp = store.teleportTo ?? (keys.reset ? ([START[0], START[2]] as [number, number]) : null);
         if (tp) {
-            rb.setTranslation({ x: tp[0], y: 1, z: tp[1] + (store.teleportTo ? 9 : 0) }, true);
+            rb.setTranslation({ x: tp[0], y: 1, z: tp[1] }, true);
             rb.setLinvel({ x: 0, y: 0, z: 0 }, true);
             speed.current = 0;
-            heading.current = Math.PI;
+            // Near the center face HQ, otherwise face outward toward the district.
+            const far = Math.hypot(tp[0], tp[1]) > 20;
+            heading.current = far ? Math.atan2(tp[0], tp[1]) : Math.atan2(-tp[0], -tp[1]);
             if (store.teleportTo) store.teleport(null);
         }
 
@@ -89,10 +93,11 @@ export default function Rover() {
 
         // Proximity to buildings and districts.
         let nearest: string | null = null;
-        let best = NEAR_DISTANCE;
+        let best = Infinity;
         for (const t of proximityTargets) {
-            const d = Math.hypot(t.x - p.x, t.z - p.z);
-            if (d < best) {
+            // Normalized distance, so a wide HQ radius does not beat a close building.
+            const d = Math.hypot(t.x - p.x, t.z - p.z) / t.r;
+            if (d < 1 && d < best) {
                 best = d;
                 nearest = t.slug;
             }
@@ -134,11 +139,8 @@ export default function Rover() {
                     <boxGeometry args={[2, 0.7, 3.2]} />
                     <meshStandardMaterial color="#ef4444" flatShading />
                 </mesh>
-                {/* Cabin */}
-                <mesh position={[0, 1.4, -0.3]} castShadow>
-                    <boxGeometry args={[1.6, 0.6, 1.6]} />
-                    <meshStandardMaterial color="#f8fafc" flatShading />
-                </mesh>
+                {/* Driver: me */}
+                <Avatar3D position={[0, 0.75, -0.35]} scale={0.5} idle={false} />
                 {/* Windshield */}
                 <mesh position={[0, 1.4, 0.52]}>
                     <boxGeometry args={[1.4, 0.45, 0.05]} />
